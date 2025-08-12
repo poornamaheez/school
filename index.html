@@ -1,0 +1,4011 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduManage Pro - School Management System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;      /* add this */
+            white-space: nowrap; 
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h4 {
+            color: white;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .content-section {
+            display: none;
+            padding: 2rem;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .table thead th {
+            background-color: var(--light-bg);
+            border: none;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.5em 0.75em;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: white;
+            border-radius: 12px;
+        }
+
+        .role-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mobile-toggle {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .content-section {
+                padding: 1rem;
+            }
+        }
+
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .notification-bell {
+            position: relative;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-mortarboard-fill fs-2 text-warning mb-2"></i>
+            <h4>EduManage Pro</h4>
+            <small>School Management System</small>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#" data-section="dashboard">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link" href="#" data-section="students">
+                <i class="bi bi-person-lines-fill"></i> Student Management
+            </a>
+            <a class="nav-link" href="#" data-section="attendance">
+                <i class="bi bi-calendar-check"></i> Attendance Tracking
+            </a>
+            <a class="nav-link" href="#" data-section="grades">
+                <i class="bi bi-clipboard-data"></i> Grades & Assessment
+            </a>
+            <a class="nav-link" href="#" data-section="fees">
+                <i class="bi bi-credit-card"></i> Fee Management
+            </a>
+            <a class="nav-link" href="#" data-section="communication">
+                <i class="bi bi-chat-dots"></i> Communication Portal
+            </a>
+            <a class="nav-link" href="#" data-section="timetable">
+                <i class="bi bi-calendar-week"></i> Timetable & Scheduling
+            </a>
+            <a class="nav-link" href="#" data-section="staff">
+                <i class="bi bi-people"></i> Staff Management
+            </a>
+            <a class="nav-link" href="#" data-section="documents">
+                <i class="bi bi-folder2-open"></i> Document Sharing
+            </a>
+            <a class="nav-link" href="#" data-section="security">
+                <i class="bi bi-shield-lock"></i> Access Control
+            </a>
+            <a class="nav-link" href="#" data-section="analytics">
+                <i class="bi bi-graph-up"></i> Analytics & Reports
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <div class="header d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+        <button class="btn btn-link mobile-toggle me-3" id="sidebarToggle">
+            <i class="bi bi-list fs-3"></i>
+        </button>
+        <div>
+            <h5 class="mb-0">Welcome to EduManage Pro</h5>
+            <small class="text-muted">Comprehensive School Management Solution</small>
+        </div>
+    </div>
+    <div class="d-flex align-items-center ms-auto">
+        <div class="role-selector me-3">
+            <select class="form-select form-select-sm" id="roleSelector">
+                <option value="admin">Admin</option>
+                <option value="principal">Principal</option>
+                <option value="teacher">Teacher</option>
+                <option value="student">Student</option>
+                <option value="parent">Parent</option>
+            </select>
+        </div>
+        <div class="notification-bell me-3">
+            <i class="bi bi-bell fs-4"></i>
+            <span class="notification-count">3</span>
+        </div>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-2" width="40" height="40" alt="Profile">
+                <span>John Admin</span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <!-- Dashboard Section -->
+        <div class="content-section active" id="dashboard">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2><i class="bi bi-speedometer2 me-2"></i>Dashboard Overview</h2>
+                    <p class="text-muted">Quick insights and key metrics for your school</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stats-card text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0">1,247</h3>
+                                    <p class="mb-0">Total Students</p>
+                                </div>
+                                <i class="bi bi-people fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stats-card text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0">89</h3>
+                                    <p class="mb-0">Teaching Staff</p>
+                                </div>
+                                <i class="bi bi-person-badge fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stats-card text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0">94.2%</h3>
+                                    <p class="mb-0">Attendance Rate</p>
+                                </div>
+                                <i class="bi bi-calendar-check fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stats-card text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-0">₹2.3L</h3>
+                                    <p class="mb-0">Fees Collected</p>
+                                </div>
+                                <i class="bi bi-credit-card fs-1 opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Recent Activity -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Recent Activities</h5>
+                            <small class="text-muted">Last 24 hours</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-success rounded-circle p-2 me-3">
+                                            <i class="bi bi-person-plus text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0">New student admission: <strong>Sarah Johnson</strong></p>
+                                            <small class="text-muted">Grade 10 - 2 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-warning rounded-circle p-2 me-3">
+                                            <i class="bi bi-exclamation-triangle text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0">Low attendance alert for <strong>Mathematics - Grade 9</strong></p>
+                                            <small class="text-muted">4 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-info rounded-circle p-2 me-3">
+                                            <i class="bi bi-calendar-event text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0">Parent-Teacher meeting scheduled for <strong>November 15th</strong></p>
+                                            <small class="text-muted">6 hours ago</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" data-section="students">
+                                    <i class="bi bi-person-plus me-2"></i>Add New Student
+                                </button>
+                                <button class="btn btn-outline-primary" data-section="attendance">
+                                    <i class="bi bi-calendar-check me-2"></i>Mark Attendance
+                                </button>
+                                <button class="btn btn-outline-primary" data-section="grades">
+                                    <i class="bi bi-clipboard-data me-2"></i>Enter Grades
+                                </button>
+                                <button class="btn btn-outline-primary" data-section="communication">
+                                    <i class="bi bi-chat-dots me-2"></i>Send Notification
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Management Section -->
+        <!-- Your students section with table and pagination -->
+<div class="content-section" id="students">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2><i class="bi bi-person-lines-fill me-2"></i>Student Information Management</h2>
+          <p class="text-muted">Manage student profiles, academic records, and parent contacts</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+          <i class="bi bi-person-plus me-2"></i>Add New Student
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters (same as before) -->
+  <!-- ... keep as you had it ... -->
+
+  <!-- Students Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover" id="studentsTable">
+          <thead>
+            <tr>
+              <th>Student ID</th>
+              <th>Name</th>
+              <th>Grade</th>
+              <th>Section</th>
+              <th>Parent Contact</th>
+              <th>Attendance</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody">
+            <!-- JS will populate rows here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Students pagination">
+        <ul class="pagination justify-content-center" id="paginationControls">
+          <!-- JS will populate pagination buttons here -->
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Sample student data (15 students)
+const studentsData = [
+  {id:'STU001', name:'Alice Johnson', email:'alice.johnson@email.com', grade:'Grade 10', section:'A', contact:'+91 98765 43210', attendance:95, status:'Active', feesPaid:80, testScores:[85, 90, 88, 92, 95], img:'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face'},
+  {id:'STU002', name:'Bob Smith', email:'bob.smith@email.com', grade:'Grade 9', section:'B', contact:'+91 98765 43211', attendance:78, status:'Active', feesPaid:60, testScores:[75, 70, 80, 85, 78], img:'https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face'},
+  {id:'STU003', name:'Carol Davis', email:'carol.davis@email.com', grade:'Grade 10', section:'A', contact:'+91 98765 43212', attendance:92, status:'Active', feesPaid:90, testScores:[88, 92, 90, 94, 96], img:'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face'},
+  {id:'STU004', name:'David Lee', email:'david.lee@email.com', grade:'Grade 8', section:'C', contact:'+91 98765 43213', attendance:85, status:'Inactive', feesPaid:50, testScores:[65, 70, 75, 80, 85], img:'https://randomuser.me/api/portraits/men/32.jpg'},
+  {id:'STU005', name:'Eva Green', email:'eva.green@email.com', grade:'Grade 11', section:'B', contact:'+91 98765 43214', attendance:88, status:'Active', feesPaid:70, testScores:[80, 85, 88, 90, 92], img:'https://randomuser.me/api/portraits/women/44.jpg'},
+  {id:'STU006', name:'Frank Moore', email:'frank.moore@email.com', grade:'Grade 9', section:'A', contact:'+91 98765 43215', attendance:90, status:'Graduated', feesPaid:100, testScores:[90, 92, 95, 97, 98], img:'https://randomuser.me/api/portraits/men/54.jpg'},
+  {id:'STU007', name:'Grace Hall', email:'grace.hall@email.com', grade:'Grade 7', section:'B', contact:'+91 98765 43216', attendance:80, status:'Active', feesPaid:65, testScores:[70, 72, 75, 78, 80], img:'https://randomuser.me/api/portraits/women/20.jpg'},
+  {id:'STU008', name:'Henry King', email:'henry.king@email.com', grade:'Grade 10', section:'C', contact:'+91 98765 43217', attendance:95, status:'Active', feesPaid:85, testScores:[88, 90, 92, 94, 96], img:'https://randomuser.me/api/portraits/men/18.jpg'},
+  {id:'STU009', name:'Isla Young', email:'isla.young@email.com', grade:'Grade 9', section:'A', contact:'+91 98765 43218', attendance:82, status:'Inactive', feesPaid:55, testScores:[60, 65, 70, 75, 80], img:'https://randomuser.me/api/portraits/women/10.jpg'},
+  {id:'STU010', name:'Jack Wright', email:'jack.wright@email.com', grade:'Grade 8', section:'B', contact:'+91 98765 43219', attendance:78, status:'Active', feesPaid:75, testScores:[70, 75, 80, 85, 90], img:'https://randomuser.me/api/portraits/men/22.jpg'},
+  {id:'STU011', name:'Kara Scott', email:'kara.scott@email.com', grade:'Grade 7', section:'C', contact:'+91 98765 43220', attendance:89, status:'Active', feesPaid:60, testScores:[68, 70, 72, 74, 76], img:'https://randomuser.me/api/portraits/women/30.jpg'},
+  {id:'STU012', name:'Leo Adams', email:'leo.adams@email.com', grade:'Grade 11', section:'A', contact:'+91 98765 43221', attendance:94, status:'Graduated', feesPaid:100, testScores:[95, 96, 97, 98, 99], img:'https://randomuser.me/api/portraits/men/11.jpg'},
+  {id:'STU013', name:'Mia Baker', email:'mia.baker@email.com', grade:'Grade 10', section:'B', contact:'+91 98765 43222', attendance:91, status:'Active', feesPaid:85, testScores:[85, 87, 89, 91, 93], img:'https://randomuser.me/api/portraits/women/25.jpg'},
+  {id:'STU014', name:'Noah Carter', email:'noah.carter@email.com', grade:'Grade 9', section:'C', contact:'+91 98765 43223', attendance:77, status:'Inactive', feesPaid:45, testScores:[65, 67, 69, 71, 73], img:'https://randomuser.me/api/portraits/men/28.jpg'},
+  {id:'STU015', name:'Olivia Davis', email:'olivia.davis@email.com', grade:'Grade 8', section:'A', contact:'+91 98765 43224', attendance:84, status:'Active', feesPaid:70, testScores:[75, 77, 79, 81, 83], img:'https://randomuser.me/api/portraits/women/35.jpg'},
+];
+
+// Pagination variables
+const rowsPerPage = 5;
+let currentPage = 1;
+
+function renderTablePage(page) {
+  const tbody = document.getElementById('studentsTableBody');
+  tbody.innerHTML = ''; // Clear current rows
+
+  // Calculate slice indexes
+  const start = (page - 1) * rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageData = studentsData.slice(start, end);
+
+  pageData.forEach(student => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${student.id}</strong></td>
+      <td>
+        <div class="d-flex align-items-center">
+          <img src="${student.img}" class="rounded-circle me-2" width="32" height="32" alt="${student.name}">
+          <div>
+            <div><strong>${student.name}</strong></div>
+            <small class="text-muted">${student.email}</small>
+          </div>
+        </div>
+      </td>
+      <td>${student.grade}</td>
+      <td>${student.section}</td>
+      <td>${student.contact}</td>
+      <td><span class="badge ${student.attendance >= 90 ? 'bg-success' : student.attendance >= 75 ? 'bg-warning' : 'bg-danger'}">${student.attendance}%</span></td>
+      <td><span class="badge ${student.status === 'Active' ? 'bg-success' : student.status === 'Inactive' ? 'bg-secondary' : 'bg-info'}">${student.status}</span></td>
+      <td>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#studentProfileModal" data-student-id="${student.id}" title="View Profile">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Contact Parent">
+            <i class="bi bi-telephone"></i>
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderPagination() {
+  const pagination = document.getElementById('paginationControls');
+  pagination.innerHTML = '';
+
+  const totalPages = Math.ceil(studentsData.length / rowsPerPage);
+
+  // Previous button
+  const prevLi = document.createElement('li');
+  prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+  prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><i class="bi bi-chevron-left"></i></a>`;
+  prevLi.addEventListener('click', e => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      updateTableAndPagination();
+    }
+  });
+  pagination.appendChild(prevLi);
+
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    const li = document.createElement('li');
+    li.className = `page-item ${currentPage === i ? 'active' : ''}`;
+    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    li.addEventListener('click', e => {
+      e.preventDefault();
+      currentPage = i;
+      updateTableAndPagination();
+    });
+    pagination.appendChild(li);
+  }
+
+  // Next button
+  const nextLi = document.createElement('li');
+  nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+  nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><i class="bi bi-chevron-right"></i></a>`;
+  nextLi.addEventListener('click', e => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      updateTableAndPagination();
+    }
+  });
+  pagination.appendChild(nextLi);
+}
+
+function updateTableAndPagination() {
+  renderTablePage(currentPage);
+  renderPagination();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  updateTableAndPagination();
+
+  const feesCtx = document.getElementById('feesPieChart').getContext('2d');
+  const performanceCtx = document.getElementById('performanceLineChart').getContext('2d');
+
+  let feesChart, performanceChart;
+
+  const modal = document.getElementById('studentProfileModal');
+
+  modal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const studentId = button.getAttribute('data-student-id');
+
+    const studentData = studentsData.find(s => s.id === studentId);
+
+    if (!studentData) return;
+
+    // Destroy old charts
+    if (feesChart) feesChart.destroy();
+    if (performanceChart) performanceChart.destroy();
+
+    // Fees Pie Chart
+    feesChart = new Chart(feesCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Paid', 'Due'],
+        datasets: [{
+          data: [studentData.feesPaid, 100 - studentData.feesPaid],
+          backgroundColor: ['#10b981', '#ef4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Performance Line Chart
+    performanceChart = new Chart(performanceCtx, {
+      type: 'line',
+      data: {
+        labels: ['Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5'],
+        datasets: [{
+          label: 'Score',
+          data: studentData.testScores,
+          fill: false,
+          borderColor: '#3b82f6',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, max: 100 }
+        }
+      }
+    });
+
+    // Update modal title
+    modal.querySelector('.modal-title').textContent = `Profile: ${studentData.name}`;
+  });
+});
+</script>
+<!-- Add this modal HTML to your existing modals section -->
+<div class="modal fade" id="detailedStudentProfileModal" tabindex="-1" aria-labelledby="detailedStudentProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailedStudentProfileModalLabel">Student Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Profile Header -->
+        <section class="profile-header mb-4">
+          <img src="" alt="Student Photo" class="profile-photo" id="modalStudentPhoto">
+          <div class="profile-info">
+            <h1 id="modalStudentName">Loading...</h1>
+            <div class="profile-meta">
+              <span class="meta-item">
+                <i class="fas fa-id-card"></i> <span id="modalStudentId">Loading...</span>
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-graduation-cap"></i> <span id="modalStudentGrade">Loading...</span>
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-school"></i> CBSE Board
+              </span>
+            </div>
+            <div class="profile-contact">
+              <div class="contact-item">
+                <strong>Contact</strong>
+                <span id="modalStudentContact">Loading...</span>
+              </div>
+              <div class="contact-item">
+                <strong>Email</strong>
+                <span id="modalStudentEmail">Loading...</span>
+              </div>
+              <div class="contact-item">
+                <strong>Status</strong>
+                <span id="modalStudentStatus">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Dashboard Grid -->
+        <section class="dashboard-grid">
+          <!-- Performance Card -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Academic Performance</h2>
+              <i class="fas fa-ellipsis-h"></i>
+            </div>
+            <div class="chart-container">
+              <canvas id="modalPerformanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fee Payment Card -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Fee Payment Status</h2>
+              <i class="fas fa-ellipsis-h"></i>
+            </div>
+            <div class="fee-chart-container">
+              <div class="fee-chart-wrapper">
+                <canvas id="modalFeeChart"></canvas>
+              </div>
+              <div class="fee-legend">
+                <div class="legend-item">
+                  <div class="legend-color paid"></div>
+                  <div>
+                    <div class="legend-text">Paid Amount</div>
+                    <div class="legend-amount" id="modalPaidAmount">₹0</div>
+                  </div>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color pending"></div>
+                  <div>
+                    <div class="legend-text">Pending Amount</div>
+                    <div class="legend-amount" id="modalPendingAmount">₹0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Card -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Attendance Summary</h2>
+              <i class="fas fa-ellipsis-h"></i>
+            </div>
+            <div class="attendance-widget">
+              <div class="attendance-ring">
+                <div class="ring-bg"></div>
+                <div class="ring-progress" id="modalAttendanceRing"></div>
+                <div class="ring-text" id="modalAttendanceText">0%</div>
+              </div>
+              <div class="attendance-details">
+                <h3>Current Term</h3>
+                <div class="attendance-stats">
+                  <div class="stat-item">
+                    <strong>Present</strong>
+                    <span id="modalPresentDays">0 days</span>
+                  </div>
+                  <div class="stat-item">
+                    <strong>Absent</strong>
+                    <span id="modalAbsentDays">0 days</span>
+                  </div>
+                  
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </section>
+
+        <!-- Additional Cards Row -->
+        <section class="dashboard-grid">
+          <!-- Upcoming Events Card -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Upcoming Events</h2>
+              <i class="fas fa-ellipsis-h"></i>
+            </div>
+            <div style="padding: 1rem 0;">
+              <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--light-gray);">
+                <div style="background-color: #eff6ff; padding: 0.5rem; border-radius: 6px; margin-right: 1rem;">
+                  <i class="fas fa-calendar-day" style="color: var(--primary-blue);"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Annual Sports Day</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">15 Nov 2023</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--light-gray);">
+                <div style="background-color: #f0fdf4; padding: 0.5rem; border-radius: 6px; margin-right: 1rem;">
+                  <i class="fas fa-microscope" style="color: var(--accent-green);"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Science Exhibition</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">22 Nov 2023</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; padding: 0.5rem 0;">
+                <div style="background-color: #fef2f2; padding: 0.5rem; border-radius: 6px; margin-right: 1rem;">
+                  <i class="fas fa-book-open" style="color: #ef4444;"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Parent-Teacher Meeting</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">30 Nov 2023</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities Card -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>Recent Activities</h2>
+              <i class="fas fa-ellipsis-h"></i>
+            </div>
+            <div style="padding: 1rem 0;">
+              <div style="display: flex; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px solid var(--light-gray);">
+                <div style="background-color: var(--light-gray); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; flex-shrink: 0;">
+                  <i class="fas fa-trophy" style="color: var(--warning-orange); font-size: 0.75rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Won 1st prize in Inter-School Debate</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">2 days ago</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-start; padding: 0.5rem 0; border-bottom: 1px solid var(--light-gray);">
+                <div style="background-color: var(--light-gray); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; flex-shrink: 0;">
+                  <i class="fas fa-check-circle" style="color: var(--accent-green); font-size: 0.75rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Submitted Science Project</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">1 week ago</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: flex-start; padding: 0.5rem 0;">
+                <div style="background-color: var(--light-gray); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; flex-shrink: 0;">
+                  <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 0.75rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight: 500;">Late submission - Math assignment</div>
+                  <div style="font-size: 0.75rem; color: var(--medium-gray);">2 weeks ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Add these CSS variables and styles to your existing CSS */
+:root {
+  --primary-blue: #2563eb;
+  --secondary-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-orange: #f78f45;
+  --warning-orange: #f59e0b;
+  --dark-gray: #1f2937;
+  --medium-gray: #6b7280;
+  --light-gray: #f3f4f6;
+  --white: #ffffff;
+}
+
+/* Profile Header Styles */
+.profile-header {
+  background-color: var(--white);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.profile-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border: 4px solid var(--light-gray);
+  margin-right: 1.5rem;
+}
+
+.profile-info h1 {
+  font-size: 1.25rem;
+  color: var(--dark-gray);
+  margin-bottom: 0.25rem;
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  color: var(--medium-gray);
+  font-size: 0.875rem;
+}
+
+.meta-item i {
+  margin-right: 0.5rem;
+  color: var(--secondary-blue);
+}
+
+.profile-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.contact-item {
+  font-size: 0.875rem;
+}
+
+.contact-item strong {
+  display: block;
+  color: var(--medium-gray);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-card {
+  background-color: var(--white);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-header h2 {
+  font-size: 1.125rem;
+  color: var(--dark-gray);
+}
+
+.card-header i {
+  color: var(--medium-gray);
+}
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  height: 200px;
+  width: 100%;
+}
+
+/* Fee Chart */
+.fee-chart-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fee-chart-wrapper {
+  width: 120px;
+  height: 120px;
+}
+
+.fee-legend {
+  flex: 1;
+  padding-left: 1.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 0.75rem;
+}
+
+.legend-color.paid {
+  background-color: var(--accent-green);
+}
+
+.legend-color.pending {
+  background-color: var(--warning-orange);
+}
+
+.legend-text {
+  font-size: 0.875rem;
+  color: var(--medium-gray);
+}
+
+.legend-amount {
+  font-weight: 600;
+  color: var(--dark-gray);
+  margin-top: 0.25rem;
+}
+
+/* Attendance Widget */
+.attendance-widget {
+  display: flex;
+  align-items: center;
+}
+
+.attendance-ring {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-right: 1.5rem;
+}
+
+.ring-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 6px solid var(--light-gray);
+  border-radius: 50%;
+}
+
+.ring-progress {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 6px solid var(--accent-green);
+  border-radius: 50%;
+  clip: rect(0, 30px, 60px, 0);
+}
+
+.ring-text {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--dark-gray);
+}
+
+.attendance-details h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.attendance-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-item {
+  font-size: 0.875rem;
+}
+
+.stat-item strong {
+  display: block;
+  color: var(--dark-gray);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+/* Modal responsive adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-photo {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .fee-chart-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .fee-legend {
+    padding-left: 0;
+    padding-top: 1rem;
+    width: 100%;
+  }
+}
+</style>
+
+<script>
+// Add this JavaScript to your existing script section
+
+// Variables for modal charts
+let modalPerformanceChart, modalFeeChart;
+
+// Function to open detailed student profile modal
+function openDetailedStudentProfile(studentId) {
+  const student = studentsData.find(s => s.id === studentId);
+  if (!student) return;
+
+  // Update modal content
+  document.getElementById('modalStudentPhoto').src = student.img;
+  document.getElementById('modalStudentName').textContent = student.name;
+  document.getElementById('modalStudentId').textContent = `ID: ${student.id}`;
+  document.getElementById('modalStudentGrade').textContent = `Class: ${student.grade}-${student.section}`;
+  document.getElementById('modalStudentContact').textContent = student.contact;
+  document.getElementById('modalStudentEmail').textContent = student.email;
+  
+  // Update status with appropriate styling
+  const statusElement = document.getElementById('modalStudentStatus');
+  statusElement.textContent = student.status;
+  statusElement.className = `badge ${student.status === 'Active' ? 'bg-success' : student.status === 'Inactive' ? 'bg-secondary' : 'bg-info'}`;
+
+  // Update attendance
+  document.getElementById('modalAttendanceText').textContent = `${student.attendance}%`;
+  
+  // Calculate present/absent days (assuming 144 total days)
+  const totalDays = 144;
+  const presentDays = Math.round((student.attendance / 100) * totalDays);
+  const absentDays = totalDays - presentDays;
+  
+  document.getElementById('modalPresentDays').textContent = `${presentDays} days`;
+  document.getElementById('modalAbsentDays').textContent = `${absentDays} days`;
+
+  // Update attendance ring
+  const ringProgress = document.getElementById('modalAttendanceRing');
+  const angle = (student.attendance / 100) * 360;
+  ringProgress.style.transform = `rotate(${angle * 0.01}turn)`;
+
+  // Update fee amounts (assuming total fee is ₹30,000)
+  const totalFee = 30000;
+  const paidAmount = Math.round((student.feesPaid / 100) * totalFee);
+  const pendingAmount = totalFee - paidAmount;
+  
+  document.getElementById('modalPaidAmount').textContent = `₹${paidAmount.toLocaleString('en-IN')}`;
+  document.getElementById('modalPendingAmount').textContent = `₹${pendingAmount.toLocaleString('en-IN')}`;
+
+  // Destroy existing charts
+  if (modalPerformanceChart) {
+    modalPerformanceChart.destroy();
+  }
+  if (modalFeeChart) {
+    modalFeeChart.destroy();
+  }
+
+  // Show modal first, then create charts
+  const modal = new bootstrap.Modal(document.getElementById('detailedStudentProfileModal'));
+  modal.show();
+
+  // Create charts after modal is shown
+  setTimeout(() => {
+    createModalCharts(student);
+  }, 300);
+}
+
+function createModalCharts(student) {
+  // Performance Chart
+  const performanceCtx = document.getElementById('modalPerformanceChart').getContext('2d');
+  modalPerformanceChart = new Chart(performanceCtx, {
+    type: 'line',
+    data: {
+      labels: ['Test 1', 'Test 2', 'Test 3', 'Test 4', 'Test 5'],
+      datasets: [
+        {
+          label: 'Mathematics',
+          data: student.testScores,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          min: 50,
+          max: 100,
+          ticks: {
+            callback: function(value) {
+              return value + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Fee Chart
+  const feeCtx = document.getElementById('modalFeeChart').getContext('2d');
+  modalFeeChart = new Chart(feeCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Paid', 'Pending'],
+      datasets: [{
+        data: [student.feesPaid, 100 - student.feesPaid],
+        backgroundColor: [
+          '#10b981',
+          '#f59e0b'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+}
+
+// Update your existing event listener for the view button
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-outline-primary')) {
+    const button = e.target.closest('.btn-outline-primary');
+    const studentId = button.getAttribute('data-student-id');
+    
+    // Check if it's the detailed view button (you can add a specific class or data attribute)
+    if (button.title === 'View Profile' || button.querySelector('.bi-eye')) {
+      e.preventDefault();
+      openDetailedStudentProfile(studentId);
+    }
+  }
+});
+</script>
+
+
+        <!-- Attendance Tracking Section -->
+        <!-- Attendance Tracking Section (your provided code) -->
+<div class="content-section" id="attendance">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2><i class="bi bi-calendar-check me-2"></i>Attendance Tracking</h2>
+          <p class="text-muted">Digital attendance management and reporting system</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+          <i class="bi bi-plus-circle me-2"></i>Mark Attendance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Overview Cards -->
+<div class="row mb-4">
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-people-fill fs-2 text-success mb-2"></i>
+        <h4>1,156</h4>
+        <p class="text-muted mb-0">Present Today</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clickable Absent Today Card -->
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center" role="button" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#sendMessageModal">
+      <div class="card-body">
+        <i class="bi bi-person-x-fill fs-2 text-danger mb-2"></i>
+        <h4>91</h4>
+        <p class="text-muted mb-0">Absent Today</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-clock fs-2 text-warning mb-2"></i>
+        <h4>23</h4>
+        <p class="text-muted mb-0">Late Arrivals</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-percentage fs-2 text-info mb-2"></i>
+        <h4>94.2%</h4>
+        <p class="text-muted mb-0">Overall Rate</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send Message Modal -->
+<div class="modal fade" id="sendMessageModal" tabindex="-1" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="sendAbsentMessageForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="sendMessageModalLabel">Send Message to Absent Students</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Send an alert message to the parents of all 182 absent students ? </p>
+          
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Example form submit handler for sending messages
+  document.getElementById('sendAbsentMessageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const message = document.getElementById('messageText').value.trim();
+    if (message) {
+      // Here you can add your logic to send the message to absent students' contacts
+      alert('Message sent to absent students:\n' + message);
+      // Close the modal programmatically
+      const modal = bootstrap.Modal.getInstance(document.getElementById('sendMessageModal'));
+      modal.hide();
+      // Reset form
+      this.reset();
+    } else {
+      alert('Please enter a message before sending.');
+    }
+  });
+</script>
+
+  <!-- Attendance Management -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Today's Attendance</h5>
+          <div class="d-flex gap-2">
+            <input type="date" class="form-control form-control-sm" value="2024-01-15">
+            <select class="form-select form-select-sm">
+              <option>All Classes</option>
+              <option>Grade 10-A</option>
+              <option>Grade 9-B</option>
+              <option>Grade 8-C</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Class</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                      Alice Johnson
+                    </div>
+                  </td>
+                  <td>Grade 10-A</td>
+                  <td><span class="badge bg-success">Present</span></td>
+                  <td>8:15 AM</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-warning">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                      Bob Smith
+                    </div>
+                  </td>
+                  <td>Grade 9-B</td>
+                  <td><span class="badge bg-danger">Absent</span></td>
+                  <td>-</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Notify Parent">
+                      <i class="bi bi-telephone"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                      Carol Davis
+                    </div>
+                  </td>
+                  <td>Grade 10-A</td>
+                  <td><span class="badge bg-warning">Late</span></td>
+                  <td>8:45 AM</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-warning">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Attendance Analytics</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="attendanceChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary btn-sm">
+              <i class="bi bi-download me-2"></i>Export Report
+            </button>
+            <button class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-bell me-2"></i>Send Notifications
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="weeklyReportBtn">
+              <i class="bi bi-calendar-week me-2"></i>Weekly Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Weekly Report Modal -->
+<div class="modal fade" id="weeklyReportModal" tabindex="-1" aria-labelledby="weeklyReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="weeklyReportModalLabel">Weekly Attendance Report</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="weeklyAttendanceChart" style="max-height: 400px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN (add once in your page) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const weeklyReportBtn = document.getElementById('weeklyReportBtn');
+    const weeklyReportModal = new bootstrap.Modal(document.getElementById('weeklyReportModal'));
+    let weeklyChart = null;
+
+    weeklyReportBtn.addEventListener('click', () => {
+      weeklyReportModal.show();
+
+      // Delay to ensure modal is visible before rendering chart
+      setTimeout(() => {
+        if (weeklyChart) {
+          weeklyChart.destroy();
+        }
+
+        const ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
+
+        weeklyChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            datasets: [
+              {
+                label: 'Present',
+                data: [1150, 1130, 1140, 1160, 1155, 1100],
+                backgroundColor: '#10b981'
+              },
+              {
+                label: 'Absent',
+                data: [90, 95, 85, 80, 70, 100],
+                backgroundColor: '#ef4444'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Number of Students'
+                }
+              }
+            }
+          }
+        });
+      }, 300);
+    });
+  });
+</script>
+
+        <!-- Grades & Assessment Section -->
+        <div class="content-section" id="grades">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="bi bi-clipboard-data me-2"></i>Grade and Assessment Management</h2>
+                            <p class="text-muted">Comprehensive gradebook and assessment tracking system</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGradeModal">
+                                <i class="bi bi-plus-circle me-2"></i>Add Marks
+                            </button>
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#scheduleExamModal">
+                                <i class="bi bi-calendar-event me-2"></i>Schedule Exam
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Overview -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-trophy-fill fs-2 text-warning mb-2"></i>
+                            <h4>87.5%</h4>
+                            <p class="text-muted mb-0">Average Grade</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-clipboard-check fs-2 text-success mb-2"></i>
+                            <h4>156</h4>
+                            <p class="text-muted mb-0">Assessments</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-event fs-2 text-info mb-2"></i>
+                            <h4>12</h4>
+                            <p class="text-muted mb-0">Upcoming Exams</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-file-earmark-text fs-2 text-primary mb-2"></i>
+                            <h4>89</h4>
+                            <p class="text-muted mb-0">Report Cards</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gradebook -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Gradebook</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm">
+                                    <option>All Subjects</option>
+                                    <option>Mathematics</option>
+                                    <option>Science</option>
+                                    <option>English</option>
+                                    <option>History</option>
+                                </select>
+                                <select class="form-select form-select-sm">
+                                    <option>Grade 10-A</option>
+                                    <option>Grade 9-B</option>
+                                    <option>Grade 8-C</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Math</th>
+                                            <th>Science</th>
+                                            <th>English</th>
+                                            <th>History</th>
+                                            <th>Average</th>
+                                            <th>Grade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                                    Alice Johnson
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-success">95</span></td>
+                                            <td><span class="badge bg-success">92</span></td>
+                                            <td><span class="badge bg-success">88</span></td>
+                                            <td><span class="badge bg-success">90</span></td>
+                                            <td><strong>91.3</strong></td>
+                                            <td><span class="badge bg-success">A</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                                    Bob Smith
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-warning">78</span></td>
+                                            <td><span class="badge bg-warning">82</span></td>
+                                            <td><span class="badge bg-success">85</span></td>
+                                            <td><span class="badge bg-warning">79</span></td>
+                                            <td><strong>81.0</strong></td>
+                                            <td><span class="badge bg-warning">B</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                                    Carol Davis
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-success">89</span></td>
+                                            <td><span class="badge bg-success">94</span></td>
+                                            <td><span class="badge bg-success">91</span></td>
+                                            <td><span class="badge bg-success">87</span></td>
+                                            <td><strong>90.3</strong></td>
+                                            <td><span class="badge bg-success">A</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Upcoming Exams</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Mathematics Mid-term</strong>
+                                            <br><small class="text-muted">Grade 10-A</small>
+                                        </div>
+                                        <span class="badge bg-primary">Jan 20</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Science Lab Test</strong>
+                                            <br><small class="text-muted">Grade 9-B</small>
+                                        </div>
+                                        <span class="badge bg-primary">Jan 22</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>English Essay</strong>
+                                            <br><small class="text-muted">Grade 8-C</small>
+                                        </div>
+                                        <span class="badge bg-primary">Jan 25</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Grade Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="gradeChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Management Section -->
+       <div class="content-section" id="fees">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-credit-card me-2"></i>Fee Management</h2>
+                    <p class="text-muted">Comprehensive fee collection and payment tracking system</p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                        <i class="bi bi-plus-circle me-2"></i>Record Payment
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="bi bi-bell me-2"></i>Send Reminders
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-currency-rupee fs-2 text-success mb-2"></i>
+                    <h4>₹2.3L</h4>
+                    <p class="text-muted mb-0">Collected This Month</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-clock-history fs-2 text-warning mb-2"></i>
+                    <h4>₹45K</h4>
+                    <p class="text-muted mb-0">Pending Collection</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle fs-2 text-danger mb-2"></i>
+                    <h4>23</h4>
+                    <p class="text-muted mb-0">Overdue Payments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-receipt fs-2 text-info mb-2"></i>
+                    <h4>156</h4>
+                    <p class="text-muted mb-0">Receipts Issued</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Management Table -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Fee Status</h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm">
+                            <option>All Status</option>
+                            <option>Paid</option>
+                            <option>Pending</option>
+                            <option>Overdue</option>
+                        </select>
+                        <select class="form-select form-select-sm">
+                            <option>All Grades</option>
+                            <option>Grade 10</option>
+                            <option>Grade 9</option>
+                            <option>Grade 8</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Grade</th>
+                                    <th>Fee Type</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Paid -->
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            Alice Johnson
+                                        </div>
+                                    </td>
+                                    <td>10-A</td>
+                                    <td>Tuition Fee</td>
+                                    <td>₹15,000</td>
+                                    <td>Jan 31, 2024</td>
+                                    <td><span class="badge bg-success">Paid</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#receiptModal">
+                                            <i class="bi bi-receipt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Pending -->
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            Bob Smith
+                                        </div>
+                                    </td>
+                                    <td>9-B</td>
+                                    <td>Tuition Fee</td>
+                                    <td>₹15,000</td>
+                                    <td>Jan 31, 2024</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#reminderModal">
+                                            <i class="bi bi-bell"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Overdue -->
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            Carol Davis
+                                        </div>
+                                    </td>
+                                    <td>10-A</td>
+                                    <td>Library Fee</td>
+                                    <td>₹2,000</td>
+                                    <td>Jan 15, 2024</td>
+                                    <td><span class="badge bg-danger">Overdue</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#parentDetailsModal">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment Methods</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-credit-card fs-2 text-primary"></i>
+                                <div class="mt-2">
+                                    <strong>Online</strong>
+                                    <br><small>65%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-cash fs-2 text-success"></i>
+                                <div class="mt-2">
+                                    <strong>Cash</strong>
+                                    <br><small>35%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-download me-2"></i>Export Data
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-bell me-2"></i>Send Reminders
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<!-- 1. Receipt Modal -->
+<div class="modal fade" id="receiptModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-receipt me-2"></i> Payment Receipt
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- School Info -->
+                <div class="text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Logo_education.svg/1024px-Logo_education.svg.png" width="80" class="mb-2">
+                    <h4 class="fw-bold">Vivekanada high School</h4>
+                    <p class="mb-0">Buchireddypalem </p>
+                    <p class="text-muted">Phone: +91 98765 43210 | Email: info@school.com</p>
+                </div>
+
+                <!-- Receipt Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Receipt ID:</strong> RCPT-2024-001</p>
+                        <p><strong>Date:</strong> Jan 31, 2024</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p><strong>Student Name:</strong> Alice Johnson</p>
+                        <p><strong>Grade:</strong> 10-A</p>
+                    </div>
+                </div>
+
+                <!-- Fee Table -->
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fee Type</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tuition Fee</td>
+                            <td>₹15,000</td>
+                            <td>Online (UPI)</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" class="text-end">Total Paid</th>
+                            <th>₹15,000</th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <!-- Footer -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <p><strong>Parent Name:</strong> Mary Johnson</p>
+                        <p><strong>Contact:</strong> +91 98765 00000</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="fw-bold">Authorised Signature</p>
+                        <div style="height:50px; border-bottom:1px solid #ccc;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-printer me-1"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Fee Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-bell me-2"></i> Fee Reminder
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <i class="bi bi-exclamation-circle fs-1 text-warning"></i>
+                    <h5 class="mt-2">Pending Fee Payment</h5>
+                    <p class="text-muted">Please remind the parent to complete the payment before the due date.</p>
+                </div>
+
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Student Name:</strong> Bob Smith</li>
+                    <li class="list-group-item"><strong>Grade:</strong> 9-B</li>
+                    <li class="list-group-item"><strong>Fee Type:</strong> Tuition Fee</li>
+                    <li class="list-group-item"><strong>Amount Due:</strong> ₹15,000</li>
+                    <li class="list-group-item"><strong>Due Date:</strong> Jan 31, 2024</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button class="btn btn-warning">
+                    <i class="bi bi-send-fill me-1"></i> Send Reminder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Parent Details Modal -->
+<div class="modal fade" id="parentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-lines-fill me-2"></i> Parent Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-3">
+                    <i class="bi bi-person-circle fs-1 text-danger"></i>
+                    <h5 class="mt-2">Carol Davis</h5>
+                    <p class="text-muted">Grade 10-A | Library Fee Overdue</p>
+                </div>
+
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Parent Name:</strong> John Davis</li>
+                    <li class="list-group-item"><strong>Relation:</strong> Father</li>
+                    <li class="list-group-item"><strong>Phone:</strong> +91 98765 43210</li>
+                    <li class="list-group-item"><strong>Email:</strong> johndavis@email.com</li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+                <button class="btn btn-danger">
+                    <i class="bi bi-telephone me-1"></i> Call Parent
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS for Reminder Popup -->
+<script>
+function showReminderPopup(studentName) {
+    if (confirm(`Send a fee reminder to the parent of ${studentName}?`)) {
+        alert("Reminder sent successfully!");
+    }
+}
+</script>
+
+
+       <!-- Communication Portal Section -->
+<div class="content-section" id="communication">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2><i class="bi bi-chat-dots me-2"></i>Parent & Teacher Communication Portal</h2>
+          <p class="text-muted">Real-time communication and notification system</p>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#sendMessageModal">
+            <i class="bi bi-plus-circle me-2"></i>Send Message
+          </button>
+          <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createNewsletterModal">
+            <i class="bi bi-newspaper me-2"></i>Newsletter
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Communication Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-envelope fs-2 text-primary mb-2"></i>
+          <h4>245</h4>
+          <p class="text-muted mb-0">Messages Sent</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-reply fs-2 text-success mb-2"></i>
+          <h4>89</h4>
+          <p class="text-muted mb-0">Replies Received</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-newspaper fs-2 text-info mb-2"></i>
+          <h4>12</h4>
+          <p class="text-muted mb-0">Newsletters</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-bell fs-2 text-warning mb-2"></i>
+          <h4>67</h4>
+          <p class="text-muted mb-0">Notifications</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Contacts -->
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Contacts</h5>
+          <button class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+        <div class="card-body p-0">
+          <div class="list-group list-group-flush" id="contactsList">
+            <!-- Parent with children badge -->
+            <a href="#" class="list-group-item list-group-item-action" data-role="parent" data-name="Mrs. Johnson" data-email="mrs.johnson@example.com" data-children='[
+              {"name":"Alice Johnson", "grade":"10-A", "status":"Present"},
+              {"name":"Mark Johnson", "grade":"8-B", "status":"Absent"}
+            ]'>
+              <div class="d-flex align-items-center">
+                <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                <div class="flex-grow-1">
+                  <div><strong>Mrs. Johnson</strong></div>
+                  <small class="text-muted">Parent - Alice & Mark Johnson</small>
+                </div>
+                <span class="badge bg-primary">2</span>
+              </div>
+            </a>
+
+            <a href="#" class="list-group-item list-group-item-action" data-role="parent" data-name="Mr. Smith" data-email="mr.smith@example.com" data-children='[
+              {"name":"Bob Smith", "grade":"9-B", "status":"Present"}
+            ]'>
+              <div class="d-flex align-items-center">
+                <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                <div class="flex-grow-1">
+                  <div><strong>Mr. Smith</strong></div>
+                  <small class="text-muted">Parent - Bob Smith</small>
+                </div>
+              </div>
+            </a>
+
+            <!-- Teacher (no children) -->
+            <a href="#" class="list-group-item list-group-item-action" data-role="teacher" data-name="Ms. Davis" data-email="ms.davis@example.com">
+              <div class="d-flex align-items-center">
+                <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                <div class="flex-grow-1">
+                  <div><strong>Ms. Davis</strong></div>
+                  <small class="text-muted">Teacher - Mathematics</small>
+                </div>
+                <span class="badge bg-success">1</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Details (dynamic) -->
+    <div class="col-lg-8">
+      <div class="card" id="contactDetailsCard" style="display:none;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center" id="contactHeader">
+            <!-- Will be filled dynamically -->
+          </div>
+        </div>
+        <div class="card-body" id="contactBody">
+          <!-- Will be filled dynamically -->
+        </div>
+      </div>
+
+      <div class="card" id="noSelectionMessage">
+        <div class="card-body text-center text-muted">
+          <p>Select a contact to see details here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const contactsList = document.getElementById('contactsList');
+    const contactDetailsCard = document.getElementById('contactDetailsCard');
+    const contactHeader = document.getElementById('contactHeader');
+    const contactBody = document.getElementById('contactBody');
+    const noSelectionMessage = document.getElementById('noSelectionMessage');
+
+    contactsList.querySelectorAll('.list-group-item').forEach(item => {
+      item.addEventListener('click', e => {
+        e.preventDefault();
+
+        // Clear active class from all, add to clicked
+        contactsList.querySelectorAll('.list-group-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        const role = item.getAttribute('data-role');
+        const name = item.getAttribute('data-name');
+        const email = item.getAttribute('data-email');
+        const childrenData = item.getAttribute('data-children');
+
+        // Show the details card and hide no-selection message
+        contactDetailsCard.style.display = 'block';
+        noSelectionMessage.style.display = 'none';
+
+        // Build header
+        contactHeader.innerHTML = `
+          <img src="${item.querySelector('img').src}" class="rounded-circle me-3" width="40" height="40">
+          <div>
+            <strong>${name}</strong><br>
+            <small class="text-muted">${role.charAt(0).toUpperCase() + role.slice(1)} ${role === 'parent' ? ` - ${email}` : ''}</small>
+          </div>
+        `;
+
+        // Build body
+        if (role === 'parent' && childrenData) {
+          const children = JSON.parse(childrenData);
+          let childrenHtml = '<h5>Children Details</h5><ul class="list-group">';
+          children.forEach(child => {
+            childrenHtml += `
+              <li class="list-group-item">
+                <strong>${child.name}</strong> - Grade: ${child.grade} - Status: <span class="badge ${child.status === 'Present' ? 'bg-success' : 'bg-danger'}">${child.status}</span>
+              </li>
+            `;
+          });
+          childrenHtml += '</ul>';
+          contactBody.innerHTML = childrenHtml;
+        } else {
+          contactBody.innerHTML = `<p>No children data available.</p>`;
+        }
+      });
+    });
+  });
+</script>
+
+
+        <!-- Timetable & Scheduling Section -->
+        <div class="content-section" id="timetable">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="bi bi-calendar-week me-2"></i>Timetable & Scheduling</h2>
+                            <p class="text-muted">Automated timetable generation and exam scheduling system</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTimetableModal">
+                                <i class="bi bi-plus-circle me-2"></i>Create Timetable
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="bi bi-calendar-event me-2"></i>Schedule Event
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable View -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Weekly Timetable - Grade 10-A</h5>
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm">
+                                    <option>Grade 10-A</option>
+                                    <option>Grade 9-B</option>
+                                    <option>Grade 8-C</option>
+                                </select>
+                                <button class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-printer me-1"></i>Print
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Monday</th>
+                                            <th>Tuesday</th>
+                                            <th>Wednesday</th>
+                                            <th>Thursday</th>
+                                            <th>Friday</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>8:00-8:45</strong></td>
+                                            <td class="bg-primary bg-opacity-10">
+                                                <strong>Mathematics</strong><br>
+                                                <small>Ms. Davis - Room 101</small>
+                                            </td>
+                                            <td class="bg-success bg-opacity-10">
+                                                <strong>English</strong><br>
+                                                <small>Mr. Wilson - Room 102</small>
+                                            </td>
+                                            <td class="bg-warning bg-opacity-10">
+                                                <strong>Science</strong><br>
+                                                <small>Dr. Brown - Lab 1</small>
+                                            </td>
+                                            <td class="bg-info bg-opacity-10">
+                                                <strong>History</strong><br>
+                                                <small>Ms. Taylor - Room 103</small>
+                                            </td>
+                                            <td class="bg-secondary bg-opacity-10">
+                                                <strong>Physical Education</strong><br>
+                                                <small>Coach Smith - Gym</small>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>8:45-9:30</strong></td>
+                                            <td class="bg-success bg-opacity-10">
+                                                <strong>English</strong><br>
+                                                <small>Mr. Wilson - Room 102</small>
+                                            </td>
+                                            <td class="bg-primary bg-opacity-10">
+                                                <strong>Mathematics</strong><br>
+                                                <small>Ms. Davis - Room 101</small>
+                                            </td>
+                                            <td class="bg-info bg-opacity-10">
+                                                <strong>History</strong><br>
+                                                <small>Ms. Taylor - Room 103</small>
+                                            </td>
+                                            <td class="bg-warning bg-opacity-10">
+                                                <strong>Science</strong><br>
+                                                <small>Dr. Brown - Lab 1</small>
+                                            </td>
+                                            <td class="bg-success bg-opacity-10">
+                                                <strong>English</strong><br>
+                                                <small>Mr. Wilson - Room 102</small>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-secondary">
+                                            <td><strong>9:30-9:45</strong></td>
+                                            <td colspan="5" class="text-center"><strong>Break</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>9:45-10:30</strong></td>
+                                            <td class="bg-warning bg-opacity-10">
+                                                <strong>Science</strong><br>
+                                                <small>Dr. Brown - Lab 1</small>
+                                            </td>
+                                            <td class="bg-info bg-opacity-10">
+                                                <strong>History</strong><br>
+                                                <small>Ms. Taylor - Room 103</small>
+                                            </td>
+                                            <td class="bg-primary bg-opacity-10">
+                                                <strong>Mathematics</strong><br>
+                                                <small>Ms. Davis - Room 101</small>
+                                            </td>
+                                            <td class="bg-success bg-opacity-10">
+                                                <strong>English</strong><br>
+                                                <small>Mr. Wilson - Room 102</small>
+                                            </td>
+                                            <td class="bg-danger bg-opacity-10">
+                                                <strong>Art</strong><br>
+                                                <small>Ms. Garcia - Art Room</small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduling Tools -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Upcoming Events</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Parent-Teacher Meeting</strong>
+                                            <br><small class="text-muted">All Grades</small>
+                                        </div>
+                                        <span class="badge bg-primary">Jan 20</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Science Exhibition</strong>
+                                            <br><small class="text-muted">Grade 9-10</small>
+                                        </div>
+                                        <span class="badge bg-success">Jan 25</span>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Sports Day</strong>
+                                            <br><small class="text-muted">All Grades</small>
+                                        </div>
+                                        <span class="badge bg-warning">Feb 5</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Room Availability</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <div class="p-2 border rounded text-center">
+                                        <strong>Room 101</strong>
+                                        <br><span class="badge bg-danger">Occupied</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="p-2 border rounded text-center">
+                                        <strong>Room 102</strong>
+                                        <br><span class="badge bg-success">Available</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="p-2 border rounded text-center">
+                                        <strong>Lab 1</strong>
+                                        <br><span class="badge bg-danger">Occupied</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="p-2 border rounded text-center">
+                                        <strong>Gym</strong>
+                                        <br><span class="badge bg-success">Available</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Management Section -->
+        <div class="content-section" id="staff">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2><i class="bi bi-people me-2"></i>Staff & Teacher Management</h2>
+          <p class="text-muted">Comprehensive staff profiles, attendance, and class allocation system</p>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+            <i class="bi bi-person-plus me-2"></i>Add Staff
+          </button>
+          <button class="btn btn-outline-primary">
+            <i class="bi bi-calendar-check me-2"></i>Mark Attendance
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Replace 4 cards with 2 pie charts -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-header">
+          <h5>Staff Composition</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="staffCompositionChart" style="max-height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-header">
+          <h5>Attendance Status</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="attendanceStatusChart" style="max-height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Directory (unchanged) -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Staff Directory</h5>
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm">
+              <option>All Departments</option>
+              <option>Teaching</option>
+              <option>Administration</option>
+              <option>Support</option>
+            </select>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search staff...">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Department</th>
+                  <th>Subject/Role</th>
+                  <th>Classes</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                      <div>
+                        <div><strong>Ms. Sarah Davis</strong></div>
+                        <small class="text-muted">sarah.davis@school.edu</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Teaching</td>
+                  <td>Mathematics</td>
+                  <td><span class="badge bg-info">10-A, 9-B</span></td>
+                  <td><span class="badge bg-success">Active</span></td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Profile">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Schedule">
+                        <i class="bi bi-calendar"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                      <div>
+                        <div><strong>Mr. John Wilson</strong></div>
+                        <small class="text-muted">john.wilson@school.edu</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Teaching</td>
+                  <td>English</td>
+                  <td><span class="badge bg-info">10-A, 8-C</span></td>
+                  <td><span class="badge bg-warning">On Leave</span></td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Profile">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Schedule">
+                        <i class="bi bi-calendar"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&fit=crop&crop=face" class="rounded-circle me-3" width="32" height="32">
+                      <div>
+                        <div><strong>Dr. Emily Brown</strong></div>
+                        <small class="text-muted">emily.brown@school.edu</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Teaching</td>
+                  <td>Science</td>
+                  <td><span class="badge bg-info">10-A, 9-B, 8-C</span></td>
+                  <td><span class="badge bg-success">Active</span></td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Profile">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Schedule">
+                        <i class="bi bi-calendar"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">Leave Requests</h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            <div class="list-group-item border-0 px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>John Wilson</strong>
+                  <br><small class="text-muted">Sick Leave - 3 days</small>
+                </div>
+                <div>
+                  <button class="btn btn-sm btn-success me-1"><i class="bi bi-check"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="list-group-item border-0 px-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Maria Garcia</strong>
+                  <br><small class="text-muted">Personal Leave - 1 day</small>
+                </div>
+                <div>
+                  <button class="btn btn-sm btn-success me-1"><i class="bi bi-check"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="bi bi-x"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary btn-sm">
+              <i class="bi bi-person-plus me-2"></i>Add New Staff
+            </button>
+            <button class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-calendar-plus me-2"></i>Assign Classes
+            </button>
+            <button class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-file-earmark me-2"></i>Generate Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Chart.js CDN if not included -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Staff Composition Chart Data
+    const staffCompositionCtx = document.getElementById('staffCompositionChart').getContext('2d');
+    new Chart(staffCompositionCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Teaching Staff', 'Non-Teaching Staff'],
+        datasets: [{
+          data: [65, 24],  // You had 89 total, 65 teaching, so 24 non-teaching
+          backgroundColor: ['#0d6efd', '#6c757d'],
+          hoverOffset: 30
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+
+    // Attendance Status Chart Data
+    const attendanceStatusCtx = document.getElementById('attendanceStatusChart').getContext('2d');
+    new Chart(attendanceStatusCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Present', 'On Leave'],
+        datasets: [{
+          data: [82, 7],  // Present and On leave as per your data
+          backgroundColor: ['#198754', '#ffc107'],
+          hoverOffset: 30
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  });
+</script>
+
+
+        <!-- Document Sharing Section -->
+        <div class="content-section" id="documents">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="bi bi-folder2-open me-2"></i>Content & Document Sharing</h2>
+                            <p class="text-muted">Centralized document storage and curriculum management system</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
+                                <i class="bi bi-cloud-upload me-2"></i>Upload Document
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="bi bi-folder-plus me-2"></i>Create Folder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Categories -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-book fs-2 text-primary mb-3"></i>
+                            <h5>Curriculum</h5>
+                            <p class="text-muted">Subject curricula and syllabi</p>
+                            <span class="badge bg-primary">45 Files</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-clipboard-check fs-2 text-success mb-3"></i>
+                            <h5>Assignments</h5>
+                            <p class="text-muted">Homework and projects</p>
+                            <span class="badge bg-success">128 Files</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-journal-text fs-2 text-warning mb-3"></i>
+                            <h5>Lesson Plans</h5>
+                            <p class="text-muted">Teaching materials and plans</p>
+                            <span class="badge bg-warning">89 Files</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="bi bi-file-earmark-text fs-2 text-info mb-3"></i>
+                            <h5>Resources</h5>
+                            <p class="text-muted">Additional learning materials</p>
+                            <span class="badge bg-info">67 Files</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Browser -->
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Folders</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-folder-fill text-primary me-2"></i>Mathematics
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-folder-fill text-success me-2"></i>Science
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-folder-fill text-warning me-2"></i>English
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-folder-fill text-info me-2"></i>History
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <i class="bi bi-folder-fill text-danger me-2"></i>Art
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <h5 class="mb-0 me-3">Mathematics / Grade 10</h5>
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mb-0">
+                                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                        <li class="breadcrumb-item"><a href="#">Mathematics</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">Grade 10</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-secondary active">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="bi bi-grid"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Size</th>
+                                            <th>Modified</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                                    <span>Algebra Basics.pdf</span>
+                                                </div>
+                                            </td>
+                                            <td>PDF Document</td>
+                                            <td>2.5 MB</td>
+                                            <td>Jan 15, 2024</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Download">
+                                                        <i class="bi bi-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Share">
+                                                        <i class="bi bi-share"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark-word text-primary me-2"></i>
+                                                    <span>Homework Assignment 1.docx</span>
+                                                </div>
+                                            </td>
+                                            <td>Word Document</td>
+                                            <td>156 KB</td>
+                                            <td>Jan 12, 2024</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Download">
+                                                        <i class="bi bi-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Share">
+                                                        <i class="bi bi-share"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-file-earmark-ppt text-warning me-2"></i>
+                                                    <span>Geometry Presentation.pptx</span>
+                                                </div>
+                                            </td>
+                                            <td>PowerPoint</td>
+                                            <td>4.2 MB</td>
+                                            <td>Jan 10, 2024</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Download">
+                                                        <i class="bi bi-download"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Share">
+                                                        <i class="bi bi-share"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Access Control Section -->
+        <div class="content-section" id="security">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="bi bi-shield-lock me-2"></i>Role-Based Access and Security</h2>
+                            <p class="text-muted">Comprehensive user role management and security controls</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                <i class="bi bi-person-plus me-2"></i>Add User
+                            </button>
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+                                <i class="bi bi-shield-plus me-2"></i>Create Role
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Overview -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-people fs-2 text-primary mb-2"></i>
+                            <h4>234</h4>
+                            <p class="text-muted mb-0">Total Users</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-shield-check fs-2 text-success mb-2"></i>
+                            <h4>4</h4>
+                            <p class="text-muted mb-0">User Roles</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-person-check fs-2 text-info mb-2"></i>
+                            <h4>189</h4>
+                            <p class="text-muted mb-0">Active Sessions</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-exclamation-triangle fs-2 text-warning mb-2"></i>
+                            <h4>3</h4>
+                            <p class="text-muted mb-0">Security Alerts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Management -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">User Roles & Permissions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Role</th>
+                                            <th>Users</th>
+                                            <th>Permissions</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-danger rounded-circle p-1 me-2" style="width: 8px; height: 8px;"></div>
+                                                    <strong>Administrator</strong>
+                                                </div>
+                                            </td>
+                                            <td>5</td>
+                                            <td><span class="badge bg-danger">Full Access</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary rounded-circle p-1 me-2" style="width: 8px; height: 8px;"></div>
+                                                    <strong>Teacher</strong>
+                                                </div>
+                                            </td>
+                                            <td>65</td>
+                                            <td><span class="badge bg-primary">Teaching & Grading</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-success rounded-circle p-1 me-2" style="width: 8px; height: 8px;"></div>
+                                                    <strong>Student</strong>
+                                                </div>
+                                            </td>
+                                            <td>1,247</td>
+                                            <td><span class="badge bg-success">View Only</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-warning rounded-circle p-1 me-2" style="width: 8px; height: 8px;"></div>
+                                                    <strong>Parent</strong>
+                                                </div>
+                                            </td>
+                                            <td>892</td>
+                                            <td><span class="badge bg-warning">Limited Access</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent Login Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            <div>
+                                                <small><strong>Sarah Davis</strong></small>
+                                                <br><small class="text-muted">Teacher - Mathematics</small>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">10:30 AM</small>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            <div>
+                                                <small><strong>John Admin</strong></small>
+                                                <br><small class="text-muted">Administrator</small>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">9:15 AM</small>
+                                    </div>
+                                </div>
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop&crop=face" class="rounded-circle me-2" width="24" height="24">
+                                            <div>
+                                                <small><strong>Emily Brown</strong></small>
+                                                <br><small class="text-muted">Teacher - Science</small>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">8:45 AM</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Security Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="twoFactorAuth" checked>
+                                <label class="form-check-label" for="twoFactorAuth">
+                                    Two-Factor Authentication
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="passwordPolicy" checked>
+                                <label class="form-check-label" for="passwordPolicy">
+                                    Strong Password Policy
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="sessionTimeout" checked>
+                                <label class="form-check-label" for="sessionTimeout">
+                                    Automatic Session Timeout
+                                </label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="auditLog" checked>
+                                <label class="form-check-label" for="auditLog">
+                                    Audit Logging
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics & Reporting Section -->
+        <div class="content-section" id="analytics">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2><i class="bi bi-graph-up me-2"></i>Analytics & Reporting</h2>
+                            <p class="text-muted">Comprehensive analytics and detailed reporting system</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary">
+                                <i class="bi bi-download me-2"></i>Export Report
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="bi bi-printer me-2"></i>Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Overview -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check fs-2 text-success mb-2"></i>
+                            <h4>94.2%</h4>
+                            <p class="text-muted mb-0">Avg. Attendance</p>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +2.1%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-trophy fs-2 text-warning mb-2"></i>
+                            <h4>87.5%</h4>
+                            <p class="text-muted mb-0">Avg. Performance</p>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +1.8%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-currency-rupee fs-2 text-info mb-2"></i>
+                            <h4>₹2.3L</h4>
+                            <p class="text-muted mb-0">Fee Collection</p>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +5.2%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-people fs-2 text-primary mb-2"></i>
+                            <h4>1,247</h4>
+                            <p class="text-muted mb-0">Total Students</p>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> +23</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Reports -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Attendance Trends</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="attendanceTrendChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Grade Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="gradeDistributionChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Generation -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Generate Custom Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="reportType" class="form-label">Report Type</label>
+                                        <select class="form-select" id="reportType">
+                                            <option>Attendance Report</option>
+                                            <option>Performance Report</option>
+                                            <option>Fee Collection Report</option>
+                                            <option>Staff Report</option>
+                                            <option>Custom Report</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="reportPeriod" class="form-label">Time Period</label>
+                                        <select class="form-select" id="reportPeriod">
+                                            <option>This Month</option>
+                                            <option>Last Month</option>
+                                            <option>This Quarter</option>
+                                            <option>This Year</option>
+                                            <option>Custom Range</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="reportGrade" class="form-label">Grade/Class</label>
+                                        <select class="form-select" id="reportGrade">
+                                            <option>All Grades</option>
+                                            <option>Grade 10</option>
+                                            <option>Grade 9</option>
+                                            <option>Grade 8</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="reportFormat" class="form-label">Export Format</label>
+                                        <select class="form-select" id="reportFormat">
+                                            <option>PDF</option>
+                                            <option>Excel</option>
+                                            <option>CSV</option>
+                                            <option>Word</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="bi bi-file-earmark me-2"></i>Generate Report
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary">
+                                        <i class="bi bi-calendar me-2"></i>Schedule Report
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quick Reports</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-calendar-check me-2"></i>Daily Attendance
+                                </button>
+                                <button class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-clipboard-data me-2"></i>Grade Summary
+                                </button>
+                                <button class="btn btn-outline-info btn-sm">
+                                    <i class="bi bi-credit-card me-2"></i>Fee Status
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-people me-2"></i>Staff Summary
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-graph-up me-2"></i>Performance Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== PARENT DASHBOARD ========== -->
+<div class="content-section" id="parentDashboard">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2><i class="bi bi-house-heart me-2"></i>Parent Dashboard</h2>
+      <p class="text-muted">Your child’s information at a glance</p>
+    </div>
+  </div>
+
+  <!-- quick cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-person-circle fs-2 text-primary mb-2"></i>
+          <h5 id="parentChildCount">1</h5>
+          <p class="text-muted mb-0">Children</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-calendar-check fs-2 text-success mb-2"></i>
+          <h5 id="parentAvgAttend">95 %</h5>
+          <p class="text-muted mb-0">Avg. Attendance</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-receipt-cutoff fs-2 text-warning mb-2"></i>
+          <h5 id="parentDueFees">₹ 0</h5>
+          <p class="text-muted mb-0">Fees Due</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <i class="bi bi-trophy fs-2 text-info mb-2"></i>
+          <h5 id="parentAvgMarks">88 %</h5>
+          <p class="text-muted mb-0">Avg. Marks</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- children tabs -->
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-pills mb-3" id="childTabs" role="tablist"></ul>
+      <div class="tab-content" id="childTabContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JS for Parent Dashboard ===== -->
+<script>
+/* Mock data – replace with real API calls */
+const parentData = {
+  children: [
+    {
+      id: "STU001",
+      name: "Alice Johnson",
+      grade: "10-A",
+      avatar: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop&crop=face",
+      attendance: 95,
+      marks: { Math: 92, Science: 89, English: 90, History: 82 },
+      fees: {
+        total: 15000,
+        paid: 15000,
+        due: 0
+      },
+      timetable: [
+        { day: "Mon", time: "08:00-08:45", subject: "Math", teacher: "Ms. Davis" },
+        { day: "Mon", time: "09:00-09:45", subject: "Science", teacher: "Dr. Brown" }
+      ],
+      events: [
+        { title: "Math Test", date: "2024-01-25" },
+        { title: "Parent-Teacher Meet", date: "2024-01-30" }
+      ]
+    },
+    {
+      id: "STU002",
+      name: "Mark Johnson",
+      grade: "8-B",
+      avatar: "https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop&crop=face",
+      attendance: 92,
+      marks: { Math: 85, Science: 80, English: 88 },
+      fees: {
+        total: 12000,
+        paid: 8000,
+        due: 4000
+      },
+      timetable: [
+        { day: "Tue", time: "10:00-10:45", subject: "English", teacher: "Mr. Wilson" }
+      ],
+      events: [
+        { title: "Science Project", date: "2024-02-05" }
+      ]
+    }
+  ]
+};
+
+/* Build parent dashboard */
+function buildParentDashboard() {
+  const container = document.getElementById("parentDashboard");
+  if (!container) return;
+
+  // summary cards
+  document.getElementById("parentChildCount").textContent = parentData.children.length;
+  const avgAtt = parentData.children.reduce((a, c) => a + c.attendance, 0) / parentData.children.length;
+  document.getElementById("parentAvgAttend").textContent = Math.round(avgAtt) + " %";
+  const totalDue = parentData.children.reduce((a, c) => a + c.fees.due, 0);
+  document.getElementById("parentDueFees").textContent = "₹ " + totalDue.toLocaleString();
+  const avgMarks = parentData.children.reduce((a, c) => {
+    const subs = Object.values(c.marks);
+    return a + subs.reduce((s, m) => s + m, 0) / subs.length;
+  }, 0) / parentData.children.length;
+  document.getElementById("parentAvgMarks").textContent = Math.round(avgMarks) + " %";
+
+  // tabs & content
+  const tabs = document.getElementById("childTabs");
+  const content = document.getElementById("childTabContent");
+  tabs.innerHTML = "";
+  content.innerHTML = "";
+
+  parentData.children.forEach((child, idx) => {
+    const active = idx === 0 ? "active show" : "";
+    const tabBtn = `<li class="nav-item" role="presentation">
+      <button class="nav-link ${active}" id="tab-${child.id}" data-bs-toggle="pill" data-bs-target="#pane-${child.id}" type="button">
+        <img src="${child.avatar}" class="rounded-circle me-2" width="24" height="24">${child.name}
+      </button>
+    </li>`;
+    tabs.insertAdjacentHTML("beforeend", tabBtn);
+
+    const pane = `<div class="tab-pane fade ${active}" id="pane-${child.id}">
+      <div class="row">
+        <!-- Child Info Card -->
+        <div class="col-lg-4 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <strong>${child.name}</strong> (${child.grade})
+            </div>
+            <div class="card-body text-center">
+              <img src="${child.avatar}" class="rounded-circle mb-2" width="80" height="80">
+              <p class="mb-1"><strong>Attendance:</strong> ${child.attendance}%</p>
+              <button class="btn btn-sm btn-outline-primary w-100">View Full Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marks Card -->
+        <div class="col-lg-4 mb-4">
+          <div class="card">
+            <div class="card-header">Marks</div>
+            <div class="card-body">
+              ${Object.entries(child.marks).map(([sub, m]) =>
+                `<div class="d-flex justify-content-between"><span>${sub}</span><span class="fw-bold">${m}</span></div>`
+              ).join("")}
+            </div>
+          </div>
+        </div>
+
+        <!-- Fees Card -->
+        <div class="col-lg-4 mb-4">
+          <div class="card">
+            <div class="card-header">Fee Status</div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between"><span>Total:</span><span>₹ ${child.fees.total.toLocaleString()}</span></div>
+              <div class="d-flex justify-content-between"><span>Paid:</span><span>₹ ${child.fees.paid.toLocaleString()}</span></div>
+              <div class="d-flex justify-content-between"><span class="text-danger">Due:</span><span class="text-danger fw-bold">₹ ${child.fees.due.toLocaleString()}</span></div>
+              ${child.fees.due > 0 ? '<button class="btn btn-sm btn-danger w-100 mt-2">Pay Now</button>' : ""}
+            </div>
+          </div>
+        </div>
+
+        <!-- Timetable -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">Timetable</div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <thead><tr><th>Day</th><th>Time</th><th>Subject</th></tr></thead>
+                <tbody>
+                  ${child.timetable.map(t => `<tr><td>${t.day}</td><td>${t.time}</td><td>${t.subject}</td></tr>`).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">Upcoming Events</div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                ${child.events.map(e => `<li class="list-group-item">${e.title} <span class="badge bg-secondary float-end">${e.date}</span></li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+    content.insertAdjacentHTML("beforeend", pane);
+  });
+}
+
+/* Hook into your existing role switcher */
+const _origSimulate = simulateRoleAccess;   // keep original for other roles
+simulateRoleAccess = function(role) {
+  const allSections = document.querySelectorAll('.content-section');
+  allSections.forEach(s => s.classList.remove('active'));
+
+  if (role === 'parent') {
+    document.getElementById('parentDashboard').classList.add('active');
+    buildParentDashboard();
+  } else {
+    _origSimulate(role);   // delegate to original logic
+  }
+};
+</script>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>&copy; 2024 EduManage Pro. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p>Powered by Advanced School Management Technology</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            initializeCharts();
+            initializeTooltips();
+        });
+
+        // Main app initialization
+        function initializeApp() {
+            // Sidebar navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            // Navigation functionality
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Hide all sections
+                    sections.forEach(section => section.classList.remove('active'));
+                    // Show target section
+                    const targetSection = document.getElementById(this.dataset.section);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                    }
+
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
+                        mainContent.classList.remove('expanded');
+                    }
+                });
+            });
+
+            // Sidebar toggle functionality
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                mainContent.classList.toggle('expanded');
+            });
+
+            // Role-based access simulation
+            const roleSelector = document.getElementById('roleSelector');
+            roleSelector.addEventListener('change', function() {
+                simulateRoleAccess(this.value);
+            });
+
+            // Quick action buttons
+            const quickActionButtons = document.querySelectorAll('[data-section]');
+            quickActionButtons.forEach(button => {
+                if (!button.classList.contains('nav-link')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetSection = this.dataset.section;
+                        
+                        // Find and trigger the corresponding nav link
+                        const navLink = document.querySelector(`.nav-link[data-section="${targetSection}"]`);
+                        if (navLink) {
+                            navLink.click();
+                        }
+                    });
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(e.target);
+                    const isClickOnToggle = sidebarToggle.contains(e.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('show')) {
+                        sidebar.classList.remove('show');
+                        mainContent.classList.remove('expanded');
+                    }
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                    mainContent.classList.remove('expanded');
+                }
+            });
+        }
+
+        // Role-based access simulation
+        function simulateRoleAccess(role) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const rolePermissions = {
+                'admin': ['dashboard', 'students', 'attendance', 'grades', 'fees', 'communication', 'timetable', 'staff', 'documents', 'security', 'analytics'],
+                'principal': ['dashboard', 'students', 'attendance', 'grades', 'fees', 'communication', 'timetable', 'staff', 'documents', 'security', 'analytics'],
+                'teacher': ['dashboard', 'students', 'attendance', 'grades', 'communication', 'timetable', 'documents'],
+                'student': ['dashboard', 'attendance', 'grades', 'communication', 'timetable', 'documents'],
+                'parent': ['dashboard', 'attendance', 'grades', 'communication', 'fees']
+            };
+
+            navLinks.forEach(link => {
+                const section = link.dataset.section;
+                if (rolePermissions[role].includes(section)) {
+                    link.style.display = 'block';
+                    link.classList.remove('disabled');
+                } else {
+                    link.style.display = 'none';
+                }
+            });
+
+            // Update header to show current role
+            const currentRole = role.charAt(0).toUpperCase() + role.slice(1);
+            document.querySelector('.header h5').textContent = `Welcome to EduManage Pro - ${currentRole} View`;
+        }
+
+        // Initialize tooltips
+        function initializeTooltips() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Attendance Chart
+            const attendanceCtx = document.getElementById('attendanceChart');
+            if (attendanceCtx) {
+                new Chart(attendanceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent', 'Late'],
+                        datasets: [{
+                            data: [1156, 91, 23],
+                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Grade Distribution Chart
+            const gradeCtx = document.getElementById('gradeChart');
+            if (gradeCtx) {
+                new Chart(gradeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D'],
+                        datasets: [{
+                            label: 'Number of Students',
+                            data: [45, 89, 156, 234, 189, 67, 23],
+                            backgroundColor: [
+                                '#10b981', '#059669', '#3b82f6', '#2563eb', '#f59e0b', '#d97706', '#ef4444'
+                            ],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Attendance Trend Chart
+            const attendanceTrendCtx = document.getElementById('attendanceTrendChart');
+            if (attendanceTrendCtx) {
+                new Chart(attendanceTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Attendance %',
+                            data: [92, 94, 91, 95, 93, 94],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 85,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Grade Distribution Chart for Analytics
+            const gradeDistCtx = document.getElementById('gradeDistributionChart');
+            if (gradeDistCtx) {
+                new Chart(gradeDistCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['A Grade', 'B Grade', 'C Grade', 'D Grade'],
+                        datasets: [{
+                            data: [35, 40, 20, 5],
+                            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Sample modal functions (would need actual modals in a real implementation)
+        function showModal(modalId) {
+            // This would show actual Bootstrap modals
+            console.log(`Showing modal: ${modalId}`);
+        }
+
+        // Search functionality
+        function initializeSearch() {
+            const searchInputs = document.querySelectorAll('input[placeholder*="Search"]');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Implement search functionality
+                    console.log(`Searching for: ${this.value}`);
+                });
+            });
+        }
+
+        // Export functionality
+        function exportData(format, type) {
+            console.log(`Exporting ${type} data as ${format}`);
+            // Implement actual export logic
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Create and show notification
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+
+        // Initialize additional features
+        setTimeout(() => {
+            initializeSearch();
+            // Add any other initialization functions here
+        }, 1000);
+    </script>
+    <script>
+/* ----------  ROLE ROUTER  ---------- */
+function simulateRoleAccess(role){
+    /* hide every section first */
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+
+    /* special-case for parent */
+    if (role === 'parent'){
+        /* make sure the parent dashboard exists in DOM */
+        const parentSection = document.getElementById('parentDashboard');
+        if (!parentSection){
+            console.warn('parentDashboard section not found in DOM');
+            return;
+        }
+        parentSection.classList.add('active');
+        buildParentDashboard();          // populate tabs & cards
+        return;
+    }
+
+    /* legacy behaviour for all other roles */
+    const navLinks = document.querySelectorAll('.nav-link');
+    const permissions = {
+        admin   : ['dashboard','students','attendance','grades','fees','communication','timetable','staff','documents','security','analytics'],
+        principal:['dashboard','students','attendance','grades','fees','communication','timetable','staff','documents','security','analytics'],
+        teacher :['dashboard','students','attendance','grades','communication','timetable','documents'],
+        student :['dashboard','attendance','grades','communication','timetable','documents'],
+        parent  :['dashboard']                       // handled above
+    };
+
+    /* show/hide nav links */
+    navLinks.forEach(link => {
+        const sec = link.dataset.section;
+        const allowed = permissions[role] || [];
+        link.style.display = allowed.includes(sec) ? 'block' : 'none';
+        link.classList.toggle('active', sec === 'dashboard' && allowed.includes('dashboard'));
+    });
+
+    /* activate Dashboard if allowed */
+    const dash = document.getElementById('dashboard');
+    if (dash && (permissions[role] || []).includes('dashboard')) dash.classList.add('active');
+}
+</script>
+</body>
+</html> 
